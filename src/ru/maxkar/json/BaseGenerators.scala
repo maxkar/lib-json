@@ -10,7 +10,8 @@ trait BaseGenerators {
   implicit val booleanGenerator = Generator[Boolean](x ⇒
     if (x) JsonTrue else JsonFalse)
 
-  implicit val stringGenerator = Generator[String](JsonString.apply)
+  implicit val stringGenerator = Generator[String](x ⇒
+    if (x == null) JsonNull else JsonString(x))
 
   implicit val intGenerator = Generator[Int](x ⇒ JsonNumber(x.toString))
 

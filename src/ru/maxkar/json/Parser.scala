@@ -22,15 +22,6 @@ object Parser {
    */
   def opt[T](base : Parser[T]) : Parser[Option[T]] =
     Parser[Option[T]](x ⇒
-      if (x == JsonUndefined) None
-      else Some(base.parse(x)))
-
-
-  /**
-   * Similar to opt treating both undefined and null as None.
-   */
-  def optNull[T](base : Parser[T]) : Parser[Option[T]] =
-    Parser[Option[T]](x ⇒
       if (x == JsonUndefined || x == JsonNull) None
       else Some(base.parse(x)))
 
