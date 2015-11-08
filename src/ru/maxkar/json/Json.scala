@@ -1,5 +1,8 @@
 package ru.maxkar.json
 
+import java.io.Writer
+import java.io.Reader
+
 /**
  * Json facade.
  */
@@ -43,4 +46,38 @@ object Json {
       .map(x ⇒
         if (x._2 == null) (x._1, JsonNull)
         else (x._1, x._2.asInstanceOf[JsonValue])) : _*))
+
+
+  /**
+   * Outputs value into the target stream.
+   * @param value value to write. It is phantom value to allow easy interop with
+   *   generators, but actual value should be a subtype of JsonValue.
+   * @throws IOException if something happen with the writer.
+   * @throws JsonException if value is undefined.
+   */
+  def write(value : JsonPhantomValue, stream : Writer) : Unit =
+    Serializer.write(value, stream)
+
+
+  /** Converts a json value into the string. */
+  def toString(value : JsonPhantomValue) : String = {
+    val sw = new java.io.StringWriter()
+    write(value, sw)
+    sw.close()
+    sw.toString()
+  }
+
+
+
+  /** Parses a json from the reader. */
+  def parse(reader : Reader) : JsonValue = Deserializer.parse(reader)
+
+
+  /** Parses a json from the string. */
+  def parse(input : String) : JsonValue =
+    parse(new java.io.StringReader(input))
+
+
+  /** Parses a json from the byte array. */
+  def parse(bytes : Array[Byte]) : JsonValue = Deserializer.parse(bytes)
 }
