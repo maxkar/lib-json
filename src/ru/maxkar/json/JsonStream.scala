@@ -1,11 +1,9 @@
-package ru.maxkar.json.input.objects
+package ru.maxkar.json
 
 import java.io.Reader
 
-import ru.maxkar.json.JsonException
-
 /** Input stream used by the JSON reader. */
-private[objects] final class JsonStream(base : Reader) {
+private[json] final class JsonStream(base : Reader) {
   /** Location in the input stream. */
   private val tracker = new LocationTracker()
 
@@ -35,3 +33,4 @@ private[objects] final class JsonStream(base : Reader) {
   /** Returns a stream location so far. */
   def location() : String = tracker.getLocation()
 }
+

@@ -19,3 +19,5 @@ scalaSource in Test := baseDirectory.value / "test"
 target := baseDirectory.value / ".target"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "1.9.2" % "test"
+
+scalacOptions += "-feature"

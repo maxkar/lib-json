@@ -1,97 +1,23 @@
-package ru.maxkar.json.input.objects
+package ru.maxkar.json
 
-import java.io.IOException
 import java.io.Reader
 
-import ru.maxkar.json.JsonException
-
-import scala.language.implicitConversions
-
+import java.io.IOException
 
 /**
- * <p>JSON manipulation utilities. Provides many convinience/utility methods,
- * implicit conversions, etc... </p>
- *
- * <p>All strict conversion methods throws a NoJsonFieldException if value
- * denotes an access to the non-existent property. They throw
- * IncompatibleValueException if field value is not compatible to the required
- * type.
- * </p>
+ * Json deserializer object.
  */
-object Json {
-  /* MODEL PARTS. */
-
-  /** Truth value. */
-  private val True = new AbstractValue("boolean") {
-    override def asBoolean() : Boolean = true
-  }
+private[json] object Deserializer {
 
 
-
-  /** False value. */
-  private val False = new AbstractValue("boolean") {
-    override def asBoolean() : Boolean = false
-  }
-
-
-
-  /** Representation of the Json <code>null</code> value. This value was
-   * explicitly specified as null in the input.
-   */
-  val Null = new EmptyValue("null")
-
-
-  /** Representation of the "undefined" value. This value is returned on
-   * access to the undefined property (on the object) or index
-   * (on json array). This value is automatically converted into
-   * <code>None</code> in option accessors. This simplifies code accessing
-   * optional arguments:
-   * <code> var x : Option[Int] = x.a </code> No explicit checks are
-   * required. This value behaves like a <code>JsonNull</code> but have
-   * a different identity. So code aware of the difference between null
-   * and undefined could distinguish these scerarios.
-   */
-  val Undefined = new EmptyValue("undefined")
-  /* UTILITY SECTION. */
-
-
-  /**
-   * Parses a string as a JSON object.
-   */
-  def parseObject(str : String) : JsonObject =
-    parseValue(str).asObject
-
-
-  /**
-   * Parses a json stream. This method performs an automatic
-   * encoding detection according to the RFC-4627.
-   * @throws IOException if bytes does not define a valid JSON response.
-   */
-  def parseObject(bytes : Array[Byte]) : JsonObject =
-    parseObject(asJsonText(bytes))
-
-
-
-  /**
-   * Parses a string as a JSON object.
-   */
-  def parseArray(str : String) : JsonArray =
-    parseValue(str).asArray
-
-
-
-  /**
-   * Parses a json stream. This method performs an automatic
-   * encoding detection according to the RFC-4627.
-   * @throws IOException if bytes does not define a valid JSON response.
-   */
-  def parseArray(bytes : Array[Byte]) : JsonArray =
-    parseArray(asJsonText(bytes))
+  /** Parses a byte array as json object. */
+  def parse(bytes : Array[Byte]) : JsonValue =
+    parse(asJsonReader(bytes))
 
 
 
   /** Parses a JSON value from the underlying stream. */
-  def parseValue(rdr : Reader) : JsonValue = {
+  def parse(rdr : Reader) : JsonValue = {
     val stream = new JsonStream(rdr)
     val res = readValue(stream)
 
@@ -102,98 +28,31 @@ object Json {
   }
 
 
-  /** Parses a string value. */
-  def parseValue(str : String) : JsonValue =
-    parseValue(new java.io.StringReader(str))
 
-
-  /** Parses a json stream from the underlying byte array. */
-  def parseValue(bytes : Array[Byte]) : JsonValue =
-    parseValue(asJsonReader(bytes))
-
-
-
-  /**
-   * Checks that content type is a json content type.
-   */
-  def isJsonContentType(contentType : String) : Boolean = {
-    val lowercase = contentType.toLowerCase
-    /* According to IANA https://www.iana.org/assignments/media-types/application/json
-     * no charset parameter is defined for the JSON schema. However, many servers
-     * pass that non-compliant parameter in the response. We allow both
-     * canonical and non-compliant representation.
-     */
-    return lowercase == "application/json" || lowercase.startsWith("application/json;")
-  }
-
-
-
-  /**
-   * Ensures that content type is a valid json content type. Throws an
-   * IOException if content type is not valid for the json.
-   */
-  def ensureJsonContentType(contentType : String) : Unit =
-    if (!isJsonContentType(contentType))
-      throw new IOException(
-        "Content type " + contentType + " is not a valid json content type")
-
-
-
-  /** Converts json into the text representation according to the
-   * supplied json encoding.
-   */
-  private def asJsonText(bytes : Array[Byte]) : String = {
-    val encoding = sniffEncoding(bytes)
-    return new String(bytes, encoding)
-  }
-
-
-  /** Converts json bytes into the reader. */
-  private def asJsonReader(bytes : Array[Byte]) : Reader = {
-    return new java.io.StringReader(asJsonText(bytes))
-  }
-
-
-
-  /** Sniffs a JSON encoding. This is performed according to the
-   * RFC-4627, chapter 3.
-   */
-  private def sniffEncoding(bytes : Array[Byte]) : String = {
-    if (bytes.length < 4)
-      return "UTF-8"
-    if (bytes(0) == 0 && bytes(1) == 0 && bytes(2) == 0 && bytes(3) != 0)
-      return "UTF-32BE"
-    if (bytes(0) == 0 && bytes(1) != 0 && bytes(2) == 0 && bytes(3) != 0)
-      return "UTF-16BE"
-    if (bytes(0) != 0 && bytes(1) == 0 && bytes(2) == 0 && bytes(3) == 0)
-      return "UTF-32LE"
-    if (bytes(0) != 0 && bytes(1) == 0 && bytes(2) != 0 && bytes(3) == 0)
-      return "UTF-16LE"
-    if (bytes(0) != 0 && bytes(1) != 0 && bytes(2) != 0 && bytes(3) != 0)
-      return "UTF-8"
-    throw new IOException(
-      "Unsupported start pattern " +
-      bytes(0) + "," + bytes(1) + "," + bytes(2) + "," + bytes(3))
-  }
-
-
-
-  /** Skips all whitespaces in the input stream. */
-  private def skipWhites(stream : JsonStream) : Unit =
-    while (isWhitespace(stream.peek))
-      stream.read
-
-
-
-  /** Checks if a character(code) is JSON whitespace. */
-  private def isWhitespace(c : Int) : Boolean =
-    c match {
-      case ' ' | '\t' | '\r' | '\n' ⇒ true
-      case _ ⇒ false
+  /** Reads one value from the stream. */
+  private def readValue(stream : JsonStream) : JsonValue = {
+    skipWhites(stream)
+    stream.peek match {
+      case 't' ⇒ readLiteral(stream, "true", JsonTrue)
+      case 'f' ⇒ readLiteral(stream, "false", JsonFalse)
+      case 'n' ⇒ readLiteral(stream, "null", JsonNull)
+      case '{' ⇒ readJsonObject(stream)
+      case '[' ⇒ readJsonArray(stream)
+      case '-' ⇒ readNumber(stream)
+      case '"' ⇒ JsonString(readString(stream))
+      case x if '0' <= x && x <= '9' ⇒ readNumber(stream)
+      case x if x < 0 ⇒
+        throw new JsonException("No json value found till " + stream.location)
+      case x ⇒
+        throw new JsonException(
+          "Illegal start of json value at " + stream.location + " char = " + x)
     }
+  }
 
 
-  /** Reads an explicit literal.
+
+  /**
+   * Reads an explicit literal.
    * @param stream stream to read the value from.
    * @param repr string representation of the literal.
    * @param res resulting json value.
@@ -226,28 +85,6 @@ object Json {
 
 
 
-  /** Reads one value from the stream. */
-  private def readValue(stream : JsonStream) : JsonValue = {
-    skipWhites(stream)
-    stream.peek match {
-      case 't' ⇒ readLiteral(stream, "true", True)
-      case 'f' ⇒ readLiteral(stream, "false", False)
-      case 'n' ⇒ readLiteral(stream, "null", Null)
-      case '{' ⇒ readJsonObject(stream)
-      case '[' ⇒ readJsonArray(stream)
-      case '-' ⇒ readNumber(stream)
-      case '"' ⇒ new JsonString(readString(stream))
-      case x if '0' <= x && x <= '9' ⇒ readNumber(stream)
-      case x if x < 0 ⇒
-        throw new JsonException("No json value found till " + stream.location)
-      case x ⇒
-        throw new JsonException(
-          "Illegal start of json value at " + stream.location + " char = " + x)
-    }
-  }
-
-
-
   /** Reads a JSON array. */
   private def readJsonArray(stream : JsonStream) : JsonValue = {
     val start = stream.location
@@ -257,7 +94,7 @@ object Json {
     skipWhites(stream)
     if (stream.peek == ']') {
       stream.read()
-      return new JsonArrayValue(new JsonArray(Seq.empty))
+      return JsonArray(Seq.empty)
     }
 
     val items = new scala.collection.mutable.ArrayBuffer[JsonValue]
@@ -272,13 +109,12 @@ object Json {
 
       stream.read() // ','
 
-      skipWhites(stream)
       items += readValue(stream)
       skipWhites(stream)
     }
     stream.read() // ']'
 
-    new JsonArrayValue(new JsonArray(items))
+    JsonArray(items)
   }
 
 
@@ -292,7 +128,7 @@ object Json {
 
     if (stream.peek() == '}') {
       stream.read()
-      return new JsonObjectValue(new JsonObject(Map.empty))
+      return new JsonObject(Map.empty)
     }
 
     val defMap = new scala.collection.mutable.HashMap[String, (String, JsonValue)]
@@ -320,7 +156,7 @@ object Json {
 
     stream.read() // '}'
 
-    new JsonObjectValue(new JsonObject(defMap.mapValues(x ⇒ x._2).toMap))
+    JsonObject(defMap.mapValues(x ⇒ x._2).toMap)
   }
 
 
@@ -394,6 +230,7 @@ object Json {
   }
 
 
+
   /** Reads an unicode character. */
   private def readUnicodeChar(stream : JsonStream) : Char =
     ((readUnicodeDigit(stream) << 12) +
@@ -418,6 +255,7 @@ object Json {
     else throw new JsonException(
       "Invalid unicode digit before " + stream.location)
   }
+
 
 
   /** Reads a number literal. */
@@ -464,7 +302,59 @@ object Json {
         res += stream.read
     }
 
-    new JsonNumber(res.toString)
+    JsonNumber(res.toString)
+  }
+
+
+
+  /** Skips all whitespaces in the input stream. */
+  private def skipWhites(stream : JsonStream) : Unit =
+    while (isWhitespace(stream.peek))
+      stream.read
+
+
+
+  /** Checks if a character(code) is JSON whitespace. */
+  private def isWhitespace(c : Int) : Boolean =
+    c match {
+      case ' ' | '\t' | '\r' | '\n' ⇒ true
+      case _ ⇒ false
+    }
+
+
+
+  /** Converts json bytes into the reader. */
+  private def asJsonReader(bytes : Array[Byte]) : Reader =
+    new java.io.InputStreamReader(
+      new java.io.ByteArrayInputStream(bytes), sniffEncoding(bytes))
+
+
+
+  /** Sniffs a JSON encoding. This is performed according to the
+   * RFC-4627, chapter 3.
+   */
+  private def sniffEncoding(bytes : Array[Byte]) : String = {
+    if (bytes.length == 2)
+      if (bytes(0) == 0)
+        return "UTF-16BE"
+      else if (bytes(1) == 0)
+        return "UTF-16LE"
+      else
+        return "UTF-8"
+    if (bytes.length < 4)
+      return "UTF-8"
+    if (bytes(0) == 0 && bytes(1) == 0 && bytes(2) == 0 && bytes(3) != 0)
+      return "UTF-32BE"
+    if (bytes(0) == 0 && bytes(1) != 0 && bytes(2) == 0 && bytes(3) != 0)
+      return "UTF-16BE"
+    if (bytes(0) != 0 && bytes(1) == 0 && bytes(2) == 0 && bytes(3) == 0)
+      return "UTF-32LE"
+    if (bytes(0) != 0 && bytes(1) == 0 && bytes(2) != 0 && bytes(3) == 0)
+      return "UTF-16LE"
+    if (bytes(0) != 0 && bytes(1) != 0 && bytes(2) != 0 && bytes(3) != 0)
+      return "UTF-8"
+    throw new IOException(
+      "Unsupported start pattern " +
+      bytes(0) + "," + bytes(1) + "," + bytes(2) + "," + bytes(3))
   }
 }
-

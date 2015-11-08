@@ -1,10 +1,10 @@
-package ru.maxkar.json.input.objects
+package ru.maxkar.json
 
 /**
  * Tracker for the input stream location. Used by the JSON parser
  * to provide good error messages.
  */
-private[objects] final class LocationTracker {
+private[json] final class LocationTracker {
   /** Absolute offset of the character in the input stream. */
   private var charOffset = 0l
 
@@ -47,3 +47,4 @@ private[objects] final class LocationTracker {
     row += 1
   }
 }
+
