@@ -17,7 +17,7 @@ trait BaseGenerators {
 
   implicit val longGenerator = Generator[Long](x ⇒ JsonNumber(x.toString))
 
-  implicit val doubleGenerator = Generator[Long](x ⇒ JsonNumber(x.toString))
+  implicit val doubleGenerator = Generator[Double](x ⇒ JsonNumber(x.toString))
 
   implicit val seqGenerator = Generator[Seq[JsonPhantomValue]](Json.array)
 
