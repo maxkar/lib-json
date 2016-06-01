@@ -11,7 +11,7 @@ object Json {
    * Returns a "human-readable" type of the json value. The primary goal
    * is to provide good error or debugging messages.
    */
-  def typeName(obj : JsonPhantomValue) : String =
+  def typeName(obj : JsonValue) : String =
     obj match {
       case JsonUndefined ⇒ "undefined"
       case JsonNull ⇒ "null"
@@ -28,7 +28,7 @@ object Json {
    * Undefined values are not present in the resulting array, but
    * JsonNull's are.
    */
-  def array(items : JsonPhantomValue*) : JsonArray =
+  def array(items : JsonValue*) : JsonArray =
     JsonArray(items.view
       .filter(_ != JsonUndefined)
       .map(x ⇒ if (x == null) JsonNull else x.asInstanceOf[JsonValue])
@@ -40,7 +40,7 @@ object Json {
    * Pairs with the "undefined" value are ignored and not present in
    * the reuslting object. However, JsonNulls are serialized.
    */
-  def make(pairs : (String, JsonPhantomValue)*) : JsonObject =
+  def make(pairs : (String, JsonValue)*) : JsonObject =
     JsonObject(Map(pairs.view
       .filter(x ⇒ x._2 != JsonUndefined)
       .map(x ⇒
@@ -55,12 +55,12 @@ object Json {
    * @throws IOException if something happen with the writer.
    * @throws JsonException if value is undefined.
    */
-  def write(value : JsonPhantomValue, stream : Writer) : Unit =
+  def write(value : JsonValue, stream : Writer) : Unit =
     Serializer.write(value, stream)
 
 
   /** Converts a json value into the string. */
-  def toString(value : JsonPhantomValue) : String = {
+  def toString(value : JsonValue) : String = {
     val sw = new java.io.StringWriter()
     write(value, sw)
     sw.close()

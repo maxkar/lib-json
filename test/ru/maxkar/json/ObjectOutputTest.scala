@@ -9,7 +9,7 @@ import org.scalatest.FunSuite
 /** Tests for DOM json output API. */
 final class ObjectOutputTest extends FunSuite {
   /** Converts input value into an output value. */
-  private def roll(x : JsonPhantomValue) : JsonValue =
+  private def roll(x : JsonValue) : JsonValue =
     Json.parse(Json.toString(x))
 
 
@@ -44,7 +44,7 @@ final class ObjectOutputTest extends FunSuite {
 
   test("Testing json arrays") {
     val a = Json.make("a" → 5)
-    val b : JsonPhantomValue = 3
+    val b : JsonValue = 3
     val x = Json.make(
       "arr" → Json.array(a, b))
 

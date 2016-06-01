@@ -1,13 +1,13 @@
 package ru.maxkar.json
 
 /**
- * Parser for the json value. Converts JsonPhantomValue to value
+ * Parser for the json value. Converts JsonValue to value
  * of some other type.
  * @param T target conversion type.
  * @param parse value parser. Throws JsonException if value could not
  *   be converted into the target.
  */
-final case class Parser[T](val parse : JsonPhantomValue ⇒ T)
+final case class Parser[T](val parse : JsonValue ⇒ T)
 
 
 /**

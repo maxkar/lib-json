@@ -12,6 +12,6 @@ object implicits
     with OptGenerators {
 
   /** Conversion from type to JSON. */
-  implicit def typeToJson[T : Generator](v : T) : JsonPhantomValue =
+  implicit def typeToJson[T : Generator](v : T) : JsonValue =
     implicitly[Generator[T]].create(v)
 }

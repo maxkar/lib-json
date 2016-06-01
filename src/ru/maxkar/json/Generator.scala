@@ -2,11 +2,11 @@ package ru.maxkar.json
 
 /**
  * Generator of Json values. Creates a "possible" json value
- * from the initial one. It returns JsonPhantomValue to support
+ * from the initial one. It returns JsonValue to support
  * optional value generation (optional keys in the output, etc...).
  * @param create function used to create a json value.
  */
-final case class Generator[T](val create : T ⇒ JsonPhantomValue)
+final case class Generator[T](val create : T ⇒ JsonValue)
 
 
 

@@ -13,21 +13,19 @@ to the serialized string.
 
 ## Type system
 
-All the concrete Json values are derived from the base type JsonPhantomValue. It
-denotes both JsonValue type hierarchy and Undefined value.
+Type hierarchy was updated since 0.0.3 zero to provide more convenient API.
 
-Children of JsonValue represent specific types of JSON Literals (strings,
-numbers, null, etc...)
+The JsonValue is a root of the type hierarchy. It have children for each
+concrete JSON type (strintg, number, null, etc...). 
 
-JsonUndefined value is subtype of JsonPhantomValue but not of JsonValue. It denotes
+There is also a special JsonUndefined value.  It denotes
 "no json value was specified". Usages are:
   * On the object access: to omit exceptions and allow option/null checking.
     I.e. to enable syntax obj.someField match { ... }
   * On the object construction to provide optional values. I.e.
     Json.make('a' -> myOption) where None maps to "JsonUndefined"
 
-
-JsonNull is different from JsonUndefined. Null is serialized as a null literal
-where Undefined is not serialized at all. During the read access Undefined mean
-that field is not present and Null mean that field is present and is set to
-null.
+JsonNull is different from JsonUndefined. JsonNull is serialized as null value
+on the wire. JsonUndefined is not serialized (and not stored). JsonNull
+value during the read means an explicit null value where JsonUndefined means
+an absence of the value.

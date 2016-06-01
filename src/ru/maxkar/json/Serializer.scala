@@ -7,7 +7,7 @@ private[json] object Serializer {
   private val HEX_CHARS = "0123456789ABCDEF"
 
   /** Writes a json value. */
-  def write(value : JsonPhantomValue, stream : Writer) : Unit =
+  def write(value : JsonValue, stream : Writer) : Unit =
     value match {
       case JsonUndefined ⇒ throw new JsonException("Could not write undefined")
       case JsonNull ⇒ stream write "null"
