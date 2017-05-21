@@ -295,6 +295,10 @@ private[json] object Deserializer {
     /* exp */
     if (stream.peek == 'e' || stream.peek == 'E') {
       res += stream.read
+
+      if (!stream.eof && (stream.peek == '+' || stream.peek == '-'))
+        res += stream.read
+
       if (stream.eof || !Character.isDigit(stream.peek))
         throw new JsonException("Illegal exp part at " + stream.location)
 
