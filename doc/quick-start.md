@@ -17,7 +17,7 @@ The simplest way is to install the library locally:
 Add the library dependency into your build definition:
 
 ```
-libraryDependencies += "ru.maxkar" %% "lib-json" % "0.0.3-SNAPSHOT"
+libraryDependencies += "ru.maxkar" %% "lib-json" % "0.0.3"
 ```
 
 The actual library version may vary.
