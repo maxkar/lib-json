@@ -12,7 +12,7 @@ description :=
   Provides nice syntax for the library user.
   """
 
-version := "0.0.4-SNAPSHOT"
+version := "0.0.4"
 
 scalaSource in Compile := baseDirectory.value / "src"
 
