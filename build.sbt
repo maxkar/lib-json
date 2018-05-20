@@ -1,4 +1,6 @@
-crossPaths := false
+crossPaths := true
+
+crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.6")
 
 name := "lib-json"
 
@@ -18,6 +20,6 @@ scalaSource in Test := baseDirectory.value / "test"
 
 target := baseDirectory.value / ".target"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "1.9.2" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
 
 scalacOptions += "-feature"
